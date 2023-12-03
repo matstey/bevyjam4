@@ -1,5 +1,5 @@
 [package]
-name = "bevyjam4"
+name = "junk"
 version = "0.1.0"
 edition = "2021"
 
@@ -16,3 +16,5 @@ opt-level = 3
 
 [dependencies]
 bevy = "0.12.1"
+leafwing-input-manager = "0.11.2"
+rand = "0.8.5"
