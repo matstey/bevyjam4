@@ -23,7 +23,7 @@ impl Plugin for ApplicationPlugin {
         app.insert_resource(ClearColor(Color::BLACK))
             .insert_resource(AmbientLight {
                 color: Color::WHITE,
-                brightness: 0.0,
+                brightness: 0.1,
             })
             .insert_resource(Msaa::Sample8)
             .add_plugins((DefaultPlugins.set(WindowPlugin {

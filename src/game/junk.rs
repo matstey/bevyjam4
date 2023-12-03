@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 use rand::{distributions::uniform::SampleRange, Rng};
 
-use crate::Coord;
+use crate::{coord::CoordDistance, Coord};
 
 #[derive(Component, Default)]
 pub struct Junk {}
@@ -36,7 +36,7 @@ fn spawn_junk(
 ) {
     commands.spawn((
         Junk::default(),
-        coord.clone(),
+        coord,
         PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Box::new(0.1, 0.1, 0.1))),
             material: materials.add(StandardMaterial {
@@ -57,6 +57,6 @@ where
     Coord {
         long: r.gen_range(-PI..PI),
         lat: r.gen_range(-PI..PI),
-        dist: r.gen_range(dist_range),
+        dist: CoordDistance::Orbit(r.gen_range(dist_range)),
     }
 }

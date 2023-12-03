@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
-use crate::Coord;
+use crate::{coord::CoordDistance, Coord};
 
 use super::CameraMovement;
 
@@ -10,9 +10,7 @@ pub struct OrbitCamera {}
 
 impl OrbitCamera {
     pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+        Default::default()
     }
 }
 
@@ -33,7 +31,7 @@ pub fn update_input(
 ) {
     for (mut coord, action) in camera_query.iter_mut() {
         let zoom_delta = action.value(CameraMovement::Zoom);
-        coord.dist = (coord.dist - zoom_delta).clamp(40.0, 100.0);
+        coord.dist = CoordDistance::Orbit((coord.get_distance() - zoom_delta).clamp(40.0, 100.0));
 
         let move_delta = match action.axis_pair(CameraMovement::Move) {
             Some(axis) => axis.xy() * time.delta_seconds() * 0.1,
@@ -41,8 +39,8 @@ pub fn update_input(
         };
 
         if action.pressed(CameraMovement::CanMove) {
-            coord.long = coord.long - move_delta.x;
-            coord.lat = coord.lat + move_delta.y;
+            coord.long -= move_delta.x;
+            coord.lat += move_delta.y;
         }
     }
 }
