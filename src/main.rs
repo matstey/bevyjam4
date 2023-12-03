@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use junk::ApplicationPlugin;
+use sfu::ApplicationPlugin;
 
 fn main() {
     App::new().add_plugins(ApplicationPlugin).run();

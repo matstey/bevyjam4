@@ -6,7 +6,7 @@ use rand::{distributions::uniform::SampleRange, Rng};
 use crate::{coord::CoordDistance, Coord};
 
 #[derive(Component, Default)]
-pub struct Junk {}
+pub struct Present {}
 
 pub fn spawn(
     mut commands: Commands,
@@ -17,32 +17,37 @@ pub fn spawn(
     // This would be nice if we drove this from some form of config.
     // Maybe some kinda level config will come.
 
+    let mesh = meshes.add(Mesh::from(shape::Box::new(0.1, 0.1, 0.1)));
+    let material = materials.add(StandardMaterial {
+        base_color: Color::GRAY,
+        metallic: 1.0,
+        perceptual_roughness: 0.0,
+        ..default()
+    });
+
     for _ in 0..5000 {
         let coord = gen_coord(21.0..24.0);
-        spawn_junk(&mut commands, &mut meshes, &mut materials, coord);
+        spawn_present(&mut commands, mesh.clone(), material.clone(), coord);
     }
 
     for _ in 0..1000 {
         let coord = gen_coord(24.0..35.0);
-        spawn_junk(&mut commands, &mut meshes, &mut materials, coord);
+        spawn_present(&mut commands, mesh.clone(), material.clone(), coord);
     }
 }
 
-fn spawn_junk(
+fn spawn_present(
     commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
+    mesh: Handle<Mesh>,
+    material: Handle<StandardMaterial>,
     coord: Coord,
 ) {
     commands.spawn((
-        Junk::default(),
+        Present::default(),
         coord,
         PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(0.1, 0.1, 0.1))),
-            material: materials.add(StandardMaterial {
-                base_color: Color::GRAY,
-                ..default()
-            }),
+            mesh,
+            material,
             transform: coord.to_transform(),
             ..default()
         },

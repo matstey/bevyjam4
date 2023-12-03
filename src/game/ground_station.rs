@@ -84,33 +84,41 @@ const STATIONS: [Info; 10] = [
 #[derive(Component, Default)]
 pub struct GroundStation {}
 
-pub fn spawn(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+#[derive(Resource)]
+pub struct StationResources {
+    pub pad: Handle<Scene>,
+    pub rocket: Handle<Scene>,
+}
+
+pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.insert_resource(StationResources {
+        pad: asset_server.load("launch_pad.glb#Scene0"),
+        rocket: asset_server.load("rocket.glb#Scene0"),
+    });
+}
+
+pub fn spawn(mut commands: Commands, scene_res: Res<StationResources>) {
     for station in STATIONS {
-        spawn_station(&mut commands, &mut meshes, &mut materials, station);
+        spawn_station(&mut commands, station, &scene_res);
     }
 }
 
-fn spawn_station(
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-    station: Info,
-) {
-    let visual_entity = commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Capsule::default())),
-            material: materials.add(StandardMaterial {
-                base_color: Color::RED,
-                ..default()
-            }),
-            transform: Transform::from_rotation(Quat::from_rotation_x(90f32.to_radians())),
-            ..default()
-        })
-        .id();
+fn spawn_station(commands: &mut Commands, station: Info, scene_res: &Res<StationResources>) {
+    let pad_scene = SceneBundle {
+        scene: scene_res.pad.clone_weak(),
+        transform: Transform::from_rotation(Quat::from_rotation_x(90f32.to_radians()))
+            .with_scale(Vec3::new(0.2, 0.2, 0.2)),
+        ..default()
+    };
+    let pad_entity = commands.spawn(pad_scene).id();
+
+    let rocket_scene = SceneBundle {
+        scene: scene_res.rocket.clone_weak(),
+        transform: Transform::from_rotation(Quat::from_rotation_x(90f32.to_radians()))
+            .with_scale(Vec3::new(0.2, 0.2, 0.2)),
+        ..default()
+    };
+    let rocket_entity = commands.spawn(rocket_scene).id();
 
     let coord = Coord::from_degrees(station.coord);
     commands
@@ -122,5 +130,5 @@ fn spawn_station(
             InheritedVisibility::VISIBLE,
             GlobalTransform::IDENTITY,
         ))
-        .add_child(visual_entity);
+        .push_children(&[rocket_entity, pad_entity]);
 }

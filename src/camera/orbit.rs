@@ -30,8 +30,11 @@ pub fn update_input(
     mut camera_query: Query<(&mut Coord, &ActionState<CameraMovement>)>,
 ) {
     for (mut coord, action) in camera_query.iter_mut() {
-        let zoom_delta = action.value(CameraMovement::Zoom);
-        coord.dist = CoordDistance::Orbit((coord.get_distance() - zoom_delta).clamp(40.0, 100.0));
+        if action.pressed(CameraMovement::Zoom) {
+            let zoom_delta = action.value(CameraMovement::Zoom) * time.delta_seconds() * 100.0;
+            coord.dist =
+                CoordDistance::Orbit((coord.get_distance() - zoom_delta).clamp(30.0, 100.0));
+        }
 
         let move_delta = match action.axis_pair(CameraMovement::Move) {
             Some(axis) => axis.xy() * time.delta_seconds() * 0.1,
