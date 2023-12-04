@@ -17,6 +17,7 @@ impl Plugin for GamePlugin {
             .add_systems(
                 Startup,
                 (player::spawn, present::spawn, ground_station::spawn),
-            );
+            )
+            .add_systems(Update, ground_station::cast_ray);
     }
 }

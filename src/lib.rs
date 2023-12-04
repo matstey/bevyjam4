@@ -5,6 +5,7 @@ use crate::state::AppState;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
+use bevy_rapier3d::prelude::*;
 
 #[cfg(feature = "editor")]
 use bevy_editor_pls::EditorPlugin;
@@ -54,6 +55,10 @@ impl Plugin for ApplicationPlugin {
                 CameraPlugin,
                 InputPlugin,
                 UiPlugin::new(true),
+            ))
+            .add_plugins((
+                RapierPhysicsPlugin::<NoUserData>::default(),
+                RapierDebugRenderPlugin::default(),
             ))
             .add_systems(Startup, setup_camera);
 
