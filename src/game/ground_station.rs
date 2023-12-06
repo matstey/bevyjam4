@@ -2,7 +2,7 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier3d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
-use crate::{camera::CameraMovement, Coord};
+use crate::{asset::LoadingAssets, camera::CameraMovement, Coord};
 
 #[derive(Clone, Default)]
 pub struct Info {
@@ -95,11 +95,16 @@ pub struct StationResources {
     pub rocket: Handle<Scene>,
 }
 
-pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(StationResources {
-        pad: asset_server.load("launch_pad.glb#Scene0"),
-        rocket: asset_server.load("rocket.glb#Scene0"),
-    });
+pub fn load_resources(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut loading: ResMut<LoadingAssets>,
+) {
+    let pad = asset_server.load("launch_pad.glb#Scene0");
+    let rocket = asset_server.load("rocket.glb#Scene0");
+    loading.0.push(pad.id().into());
+    loading.0.push(rocket.id().into());
+    commands.insert_resource(StationResources { pad, rocket });
 }
 
 pub fn spawn(mut commands: Commands, scene_res: Res<StationResources>) {

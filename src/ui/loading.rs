@@ -1,11 +1,27 @@
 use bevy::prelude::*;
 
 use crate::state::{AppState, ForState};
+use crate::ui::despawn_screen;
 
-use super::{assets::UiAssets, DrawBlinkTimer};
+use super::assets::UiAssets;
 
-pub fn setup(mut commands: Commands, assets: Res<UiAssets>) {
-    info!("Create start menu");
+// This plugin manages the loading screen
+pub struct LoadingPlugin;
+
+impl Plugin for LoadingPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(AppState::GameLoading), setup)
+            .add_systems(
+                OnExit(AppState::GameLoading),
+                despawn_screen::<OnLoadingScreen>,
+            );
+    }
+}
+
+#[derive(Component)]
+struct OnLoadingScreen;
+
+fn setup(mut commands: Commands, assets: Res<UiAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -20,36 +36,22 @@ pub fn setup(mut commands: Commands, assets: Res<UiAssets>) {
                 ..default()
             },
             ForState {
-                states: vec![AppState::StartMenu],
+                states: vec![AppState::GameLoading],
             },
+            OnLoadingScreen,
         ))
         .with_children(|parent| {
             parent.spawn((TextBundle {
                 style: Style { ..default() },
                 text: Text::from_section(
-                    "Glow",
+                    "Loading..",
                     TextStyle {
                         font: assets.font.clone(),
                         font_size: 100.0,
-                        color: Color::rgb_u8(0x00, 0xAA, 0xAA),
+                        color: Color::rgb_u8(0xe0, 0x1b, 0x24),
                     },
                 ),
                 ..default()
             },));
-            parent.spawn((
-                TextBundle {
-                    style: Style { ..default() },
-                    text: Text::from_section(
-                        "start",
-                        TextStyle {
-                            font: assets.font.clone(),
-                            font_size: 50.0,
-                            color: Color::rgb_u8(0x00, 0x44, 0x44),
-                        },
-                    ),
-                    ..default()
-                },
-                DrawBlinkTimer(Timer::from_seconds(0.5, TimerMode::Repeating)),
-            ));
         });
 }

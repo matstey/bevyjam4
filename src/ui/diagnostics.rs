@@ -7,13 +7,18 @@ use bevy::{
 
 use super::assets::UiAssets;
 
-/*pub struct DiagnosticsPlugin;
+pub struct DiagnosticsPlugin;
 
 impl Plugin for DiagnosticsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup).add_systems(Update, update);
+        app.add_systems(Startup, setup)
+            .add_systems(Update, update)
+            .add_plugins((
+                FrameTimeDiagnosticsPlugin,
+                SystemInformationDiagnosticsPlugin,
+            ));
     }
-}*/
+}
 
 #[derive(Component)]
 pub struct FpsText;

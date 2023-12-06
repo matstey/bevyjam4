@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
-use crate::Coord;
+use crate::{asset::LoadingAssets, state::AppState, Coord};
 
 pub struct ScenePlugin;
 
 impl Plugin for ScenePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(PreStartup, load_resources)
-            .add_systems(Startup, setup)
+        app.add_systems(OnEnter(AppState::GameLoading), load_resources)
+            .add_systems(OnExit(AppState::GameLoading), setup)
             .add_systems(Update, update_coords);
     }
 }
@@ -17,10 +17,14 @@ pub struct SceneResources {
     pub earth: Handle<Scene>,
 }
 
-pub fn load_resources(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(SceneResources {
-        earth: asset_server.load("earth.glb#Scene0"),
-    });
+pub fn load_resources(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut loading: ResMut<LoadingAssets>,
+) {
+    let earth = asset_server.load("earth.glb#Scene0");
+    loading.0.push(earth.id().into());
+    commands.insert_resource(SceneResources { earth });
 }
 
 fn setup(
@@ -48,6 +52,8 @@ fn setup(
         },
         ..default()
     });
+
+    info!("Setting up game");
 }
 
 pub fn update_coords(mut query: Query<(&mut Transform, &Coord)>) {

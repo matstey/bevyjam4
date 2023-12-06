@@ -9,8 +9,9 @@ pub struct ForState<T> {
 #[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default)]
 pub enum AppState {
     #[default]
+    Splash,
     StartMenu,
-    GameCreate,
+    GameLoading,
     GameRunning,
     GamePaused,
     GameOver,
@@ -18,7 +19,7 @@ pub enum AppState {
 
 impl AppState {
     pub const ANY_GAME_STATE: [AppState; 4] = [
-        AppState::GameCreate,
+        AppState::GameLoading,
         AppState::GameRunning,
         AppState::GamePaused,
         AppState::GameOver,

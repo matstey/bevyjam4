@@ -2,6 +2,7 @@ use crate::camera::CameraPlugin;
 use crate::game::GamePlugin;
 use crate::scene::ScenePlugin;
 use crate::state::AppState;
+use asset::LoadingAssets;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
@@ -16,7 +17,7 @@ use camera::orbit::OrbitCamera;
 pub use coord::Coord;
 use game::Player;
 use input::InputPlugin;
-use ui::UiPlugin;
+pub mod asset;
 pub mod game;
 pub mod input;
 pub mod scene;
@@ -49,18 +50,20 @@ impl Plugin for ApplicationPlugin {
                 ..default()
             }),))
             .add_state::<AppState>()
-            .add_plugins((
-                ScenePlugin,
-                GamePlugin,
-                CameraPlugin,
-                InputPlugin,
-                UiPlugin::new(true),
-            ))
+            .add_plugins((ScenePlugin, GamePlugin, CameraPlugin, InputPlugin))
             .add_plugins((
                 RapierPhysicsPlugin::<NoUserData>::default(),
                 RapierDebugRenderPlugin::default(),
             ))
-            .add_systems(Startup, setup_camera);
+            .add_systems(Startup, setup_camera)
+            .add_plugins((
+                ui::UiPlugin,
+                ui::splash::SplashPlugin,
+                ui::menu::MenuPlugin,
+                ui::loading::LoadingPlugin,
+                ui::diagnostics::DiagnosticsPlugin,
+            ))
+            .insert_resource(LoadingAssets::default());
 
         #[cfg(feature = "editor")]
         app.add_plugins(EditorPlugin::default());

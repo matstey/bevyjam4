@@ -1,14 +1,17 @@
 use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
-use crate::{camera::CameraMovement, game::Player};
+use crate::{camera::CameraMovement, game::Player, state::AppState};
 
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugins(InputManagerPlugin::<CameraMovement>::default())
-            .add_systems(Update, add_player_input);
+            .add_systems(
+                Update,
+                add_player_input.run_if(in_state(AppState::GameRunning)),
+            );
     }
 }
 

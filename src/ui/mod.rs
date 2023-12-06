@@ -1,42 +1,24 @@
-use bevy::{
-    diagnostic::{FrameTimeDiagnosticsPlugin, SystemInformationDiagnosticsPlugin},
-    prelude::*,
-};
+use bevy::prelude::*;
 
 use crate::state::AppState;
 
 pub mod assets;
 pub mod diagnostics;
-pub mod start_menu;
+pub mod loading;
+pub mod menu;
+pub mod splash;
 
-pub struct UiPlugin {
-    show_diag: bool,
-}
-
-impl UiPlugin {
-    pub fn new(show_diag: bool) -> Self {
-        Self { show_diag }
-    }
-}
+pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app
-            //.add_systems(OnEnter(AppState::GamePaused), pause_menu)
-            //.add_systems(OnEnter(AppState::GameOver), gameover_menu)
-            //.add_systems(Update, (menu_input_system, menu_blink_system))
-            .add_systems(Startup, assets::setup);
-
-        if self.show_diag {
-            app.add_systems(OnEnter(AppState::StartMenu), diagnostics::setup)
-                .add_systems(Update, diagnostics::update)
-                .add_plugins((
-                    FrameTimeDiagnosticsPlugin,
-                    SystemInformationDiagnosticsPlugin,
-                ));
-        }
+        app.add_systems(PreStartup, assets::setup);
     }
 }
 
-#[derive(Component)]
-pub struct DrawBlinkTimer(pub Timer);
+// Generic system that takes a component as a parameter, and will despawn all entities with that component
+pub fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
+    for entity in &to_despawn {
+        commands.entity(entity).despawn_recursive();
+    }
+}
