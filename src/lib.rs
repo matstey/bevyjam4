@@ -3,10 +3,12 @@ use crate::game::GamePlugin;
 use crate::scene::ScenePlugin;
 use crate::state::AppState;
 use asset::LoadingAssets;
-use bevy::asset::AssetMetaCheck;
+use bevy::asset::LoadState;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::*;
+use bevy::render::render_resource::{TextureViewDescriptor, TextureViewDimension};
 use bevy::window::PresentMode;
+use bevy::{asset::AssetMetaCheck, core_pipeline::Skybox};
 use bevy_rapier3d::prelude::*;
 
 #[cfg(feature = "editor")]
@@ -26,6 +28,12 @@ pub mod input;
 pub mod scene;
 pub mod state;
 pub mod ui;
+
+#[derive(Resource)]
+struct Cubemap {
+    is_loaded: bool,
+    image_handle: Handle<Image>,
+}
 
 pub struct ApplicationPlugin;
 
@@ -60,10 +68,12 @@ impl Plugin for ApplicationPlugin {
                 ui::start::StartMenuPlugin,
                 ui::paused::PausedMenuPlugin,
                 ui::loading::LoadingPlugin,
+                ui::game::GamePlugin,
+                ui::end::PostGamePlugin,
                 ui::diagnostics::DiagnosticsPlugin,
             ))
             .insert_resource(LoadingAssets::default())
-            .add_systems(Update, handle_pause);
+            .add_systems(Update, (handle_pause, cubemap_loaded));
 
         #[cfg(debug_assertions)]
         app.add_plugins(RapierDebugRenderPlugin::default());
@@ -73,9 +83,11 @@ impl Plugin for ApplicationPlugin {
     }
 }
 
-pub fn setup_camera(mut commands: Commands) {
+pub fn setup_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
     let transform = Transform::from_translation(Vec3::new(0.0, 1.0, 5.0))
         * Transform::from_rotation(Quat::from_rotation_y(0.0_f32.to_radians()));
+
+    let skybox = asset_server.load("sky.jpg");
 
     commands.spawn((
         Camera3dBundle {
@@ -90,7 +102,39 @@ pub fn setup_camera(mut commands: Commands) {
         OrbitCamera::new(),
         Coord::from_dist(80.0),
         Player::default(),
+        Skybox(skybox.clone()),
     ));
+
+    commands.insert_resource(Cubemap {
+        is_loaded: false,
+        image_handle: skybox,
+    });
+}
+
+fn cubemap_loaded(
+    asset_server: Res<AssetServer>,
+    mut images: ResMut<Assets<Image>>,
+    mut cubemap: ResMut<Cubemap>,
+    mut skyboxes: Query<&mut Skybox>,
+) {
+    if !cubemap.is_loaded && asset_server.load_state(&cubemap.image_handle) == LoadState::Loaded {
+        let image = images.get_mut(&cubemap.image_handle).unwrap();
+        // NOTE: PNGs do not have any metadata that could indicate they contain a cubemap texture,
+        // so they appear as one texture. The following code reconfigures the texture as necessary.
+        if image.texture_descriptor.array_layer_count() == 1 {
+            image.reinterpret_stacked_2d_as_array(image.height() / image.width());
+            image.texture_view_descriptor = Some(TextureViewDescriptor {
+                dimension: Some(TextureViewDimension::Cube),
+                ..default()
+            });
+        }
+
+        for mut skybox in &mut skyboxes {
+            skybox.0 = cubemap.image_handle.clone();
+        }
+
+        cubemap.is_loaded = true;
+    }
 }
 
 pub fn handle_pause(

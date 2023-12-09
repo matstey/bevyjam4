@@ -23,6 +23,9 @@ pub enum PlayerAction {
 #[derive(Component)]
 struct GameElement;
 
+#[derive(Resource, Deref, DerefMut)]
+pub struct GameTimer(Timer);
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
@@ -30,7 +33,7 @@ impl Plugin for GamePlugin {
         app.add_systems(OnEnter(AppState::Loading), ground_station::load_resources)
             .add_systems(
                 OnEnter(AppState::InGame),
-                (player::spawn, present::spawn, ground_station::spawn)
+                (init, player::spawn, present::spawn, ground_station::spawn)
                     .run_if(in_state(AppState::InGame)),
             )
             .add_systems(
@@ -41,7 +44,8 @@ impl Plugin for GamePlugin {
                 Update,
                 check_assets_loaded.run_if(in_state(AppState::Loading)),
             )
-            .add_systems(OnExit(AppState::InGame), despawn::<GameElement>);
+            .add_systems(OnExit(AppState::InGame), despawn::<GameElement>)
+            .add_systems(Update, countdown.run_if(in_state(AppState::InGame)));
     }
 }
 
@@ -62,5 +66,19 @@ fn check_assets_loaded(
         game_state.set(AppState::InGame);
         commands.remove_resource::<LoadingAssets>();
         info!("All {} assets loaded", loaded);
+    }
+}
+
+fn init(mut commands: Commands) {
+    commands.insert_resource(GameTimer(Timer::from_seconds(10.0, TimerMode::Once)));
+}
+
+fn countdown(
+    mut app_state: ResMut<NextState<AppState>>,
+    time: Res<Time>,
+    mut timer: ResMut<GameTimer>,
+) {
+    if timer.tick(time.delta()).finished() {
+        app_state.set(AppState::PostGame);
     }
 }

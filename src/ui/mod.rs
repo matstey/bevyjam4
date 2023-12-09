@@ -5,6 +5,8 @@ use crate::state::AppState;
 pub mod assets;
 pub mod colors;
 pub mod diagnostics;
+pub mod end;
+pub mod game;
 pub mod loading;
 pub mod paused;
 pub mod splash;

@@ -5,28 +5,27 @@ use crate::state::{AppState, ForState, GameState};
 
 use super::assets::UiAssets;
 
-// This plugin manages the pause menu
-pub struct PausedMenuPlugin;
+// This plugin manages the post game ui
+pub struct PostGamePlugin;
 
-impl Plugin for PausedMenuPlugin {
+impl Plugin for PostGamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Paused), menu_setup)
-            .add_systems(OnExit(GameState::Paused), despawn::<PausedMenuScreen>)
-            .add_systems(Update, menu_action.run_if(in_state(AppState::InGame)));
+        app.add_systems(OnEnter(AppState::PostGame), setup)
+            .add_systems(OnExit(AppState::PostGame), despawn::<PostGameScreen>)
+            .add_systems(Update, menu_action.run_if(in_state(AppState::PostGame)));
     }
 }
 
 #[derive(Component)]
-struct PausedMenuScreen;
+struct PostGameScreen;
 
 // All actions that can be triggered from a button click
 #[derive(Component)]
 enum MenuButtonAction {
-    Resume,
-    Quit,
+    Continue,
 }
 
-fn menu_setup(mut commands: Commands, assets: Res<UiAssets>) {
+fn setup(mut commands: Commands, assets: Res<UiAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -43,13 +42,13 @@ fn menu_setup(mut commands: Commands, assets: Res<UiAssets>) {
             ForState {
                 states: vec![AppState::StartMenu],
             },
-            PausedMenuScreen,
+            PostGameScreen,
         ))
         .with_children(|parent| {
             parent.spawn((TextBundle {
                 style: Style { ..default() },
                 text: Text::from_section(
-                    "Paused",
+                    "Game Over",
                     TextStyle {
                         font: assets.font.clone(),
                         font_size: 80.0,
@@ -65,36 +64,13 @@ fn menu_setup(mut commands: Commands, assets: Res<UiAssets>) {
                         background_color: BackgroundColor(Color::rgba(0.0, 0.0, 0.0, 0.0)),
                         ..default()
                     },
-                    MenuButtonAction::Resume,
+                    MenuButtonAction::Continue,
                 ))
                 .with_children(|parent| {
                     parent.spawn((TextBundle {
                         style: Style { ..default() },
                         text: Text::from_section(
-                            "resume",
-                            TextStyle {
-                                font: assets.font.clone(),
-                                font_size: 50.0,
-                                color: Color::rgb_u8(0xe0, 0x1b, 0x24),
-                            },
-                        ),
-                        ..default()
-                    },));
-                });
-            parent
-                .spawn((
-                    ButtonBundle {
-                        style: Style { ..default() },
-                        background_color: BackgroundColor(Color::rgba(0.0, 0.0, 0.0, 0.0)),
-                        ..default()
-                    },
-                    MenuButtonAction::Quit,
-                ))
-                .with_children(|parent| {
-                    parent.spawn((TextBundle {
-                        style: Style { ..default() },
-                        text: Text::from_section(
-                            "quit",
+                            "continue",
                             TextStyle {
                                 font: assets.font.clone(),
                                 font_size: 50.0,
@@ -119,11 +95,8 @@ fn menu_action(
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match menu_button_action {
-                MenuButtonAction::Quit => {
+                MenuButtonAction::Continue => {
                     app_state.set(AppState::StartMenu);
-                    game_state.set(GameState::Running);
-                }
-                MenuButtonAction::Resume => {
                     game_state.set(GameState::Running);
                 }
             }
