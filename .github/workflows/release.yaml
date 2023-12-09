@@ -9,6 +9,7 @@ env:
   binary: sfu
   add_binaries_to_github_release: true
   itch_target: matstevenson/sfu
+  with_lfs: true
 
 
 jobs:
@@ -21,6 +22,8 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
       - uses: actions/checkout@v4
+        with:
+            lfs: ${{ env.with_lfs }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -67,6 +70,8 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
       - uses: actions/checkout@v4
+        with:
+            lfs: ${{ env.with_lfs }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-unknown-linux-gnu
@@ -114,6 +119,8 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
       - uses: actions/checkout@v4
+        with:
+            lfs: ${{ env.with_lfs }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-pc-windows-msvc
@@ -157,6 +164,8 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
       - uses: actions/checkout@v4
+        with:
+            lfs: ${{ env.with_lfs }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-apple-darwin
@@ -201,6 +210,8 @@ jobs:
       - uses: olegtarasov/get-tag@v2.1.2
         id: get_version
       - uses: actions/checkout@v4
+        with:
+            lfs: ${{ env.with_lfs }}
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-darwin

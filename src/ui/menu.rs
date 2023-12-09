@@ -139,6 +139,7 @@ fn main_menu_setup(mut commands: Commands, assets: Res<UiAssets>) {
                         ..default()
                     },));
                 });
+            #[cfg(not(target_arch = "wasm32"))] // Cannot quit on wasm
             parent
                 .spawn((
                     ButtonBundle {
