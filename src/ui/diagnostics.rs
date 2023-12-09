@@ -42,6 +42,7 @@ pub fn setup(mut commands: Commands, assets: Res<UiAssets>) {
                 font_size: 16.0,
                 color: Color::GOLD,
             }),
+            #[cfg(not(target_arch = "wasm32"))]
             TextSection::new(
                 "\nCPU: ",
                 TextStyle {
@@ -50,6 +51,7 @@ pub fn setup(mut commands: Commands, assets: Res<UiAssets>) {
                     color: Color::WHITE,
                 },
             ),
+            #[cfg(not(target_arch = "wasm32"))]
             TextSection::from_style(TextStyle {
                 font: assets.font.clone(),
                 font_size: 16.0,
