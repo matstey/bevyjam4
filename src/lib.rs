@@ -3,6 +3,7 @@ use crate::game::GamePlugin;
 use crate::scene::ScenePlugin;
 use crate::state::AppState;
 use asset::LoadingAssets;
+use bevy::asset::AssetMetaCheck;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
@@ -28,7 +29,8 @@ pub struct ApplicationPlugin;
 
 impl Plugin for ApplicationPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(ClearColor(Color::BLACK))
+        app.insert_resource(AssetMetaCheck::Never) // Required to stop failed meta lookups. See https://github.com/bevyengine/bevy/pull/10623
+            .insert_resource(ClearColor(Color::BLACK))
             .insert_resource(AmbientLight {
                 color: Color::WHITE,
                 brightness: 0.05,
