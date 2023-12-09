@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
+use crate::despawn;
 use crate::state::{AppState, ForState};
-use crate::ui::despawn_screen;
 
 use super::assets::UiAssets;
 
@@ -11,10 +11,7 @@ pub struct LoadingPlugin;
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::GameLoading), setup)
-            .add_systems(
-                OnExit(AppState::GameLoading),
-                despawn_screen::<OnLoadingScreen>,
-            );
+            .add_systems(OnExit(AppState::GameLoading), despawn::<OnLoadingScreen>);
     }
 }
 

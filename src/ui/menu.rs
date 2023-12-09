@@ -1,8 +1,8 @@
 use bevy::{app::AppExit, prelude::*};
 
 use crate::asset::LoadingAssets;
+use crate::despawn;
 use crate::state::{AppState, ForState};
-use crate::ui::despawn_screen;
 
 use super::assets::UiAssets;
 
@@ -14,7 +14,7 @@ impl Plugin for MenuPlugin {
         app.add_state::<MenuState>()
             .add_systems(OnEnter(AppState::StartMenu), menu_setup)
             .add_systems(OnEnter(MenuState::Main), main_menu_setup)
-            .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
+            .add_systems(OnExit(MenuState::Main), despawn::<OnMainMenuScreen>)
             .add_systems(
                 Update,
                 (menu_action, button_system).run_if(in_state(AppState::StartMenu)),

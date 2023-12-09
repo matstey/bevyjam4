@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use leafwing_input_manager::Actionlike;
 
 mod action;
 mod player;
@@ -9,7 +10,18 @@ pub use ground_station::GroundStation;
 
 pub use action::Action;
 
-use crate::{asset::LoadingAssets, state::AppState};
+use crate::{asset::LoadingAssets, despawn, state::AppState};
+
+#[derive(PartialEq, Eq, Clone, Copy, Hash, Debug, Reflect, Actionlike)]
+pub enum PlayerAction {
+    CanMove,
+    Move,
+    Zoom,
+    Pause,
+}
+
+#[derive(Component)]
+struct GameElement;
 
 pub struct GamePlugin;
 
@@ -31,7 +43,8 @@ impl Plugin for GamePlugin {
         .add_systems(
             Update,
             check_assets_loaded.run_if(in_state(AppState::GameLoading)),
-        );
+        )
+        .add_systems(OnExit(AppState::GameRunning), despawn::<GameElement>);
     }
 }
 

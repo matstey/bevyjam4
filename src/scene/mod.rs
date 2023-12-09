@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset::LoadingAssets, state::AppState, Coord};
+use crate::{asset::LoadingAssets, despawn, state::AppState, Coord};
 
 pub struct ScenePlugin;
 
@@ -8,9 +8,13 @@ impl Plugin for ScenePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_systems(OnEnter(AppState::GameLoading), load_resources)
             .add_systems(OnExit(AppState::GameLoading), setup)
-            .add_systems(Update, update_coords);
+            .add_systems(Update, update_coords)
+            .add_systems(OnExit(AppState::GameRunning), despawn::<SceneElement>);
     }
 }
+
+#[derive(Component)]
+struct SceneElement;
 
 #[derive(Resource)]
 pub struct SceneResources {
@@ -37,21 +41,24 @@ fn setup(
         scene: scene_res.earth.clone_weak(),
         ..default()
     };
-    commands.spawn(scene);
+    commands.spawn((scene, SceneElement));
 
-    commands.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            shadows_enabled: false,
+    commands.spawn((
+        DirectionalLightBundle {
+            directional_light: DirectionalLight {
+                shadows_enabled: false,
+                ..default()
+            },
+            transform: Transform {
+                translation: Vec3::ZERO,
+                rotation: Quat::from_rotation_y(90f32.to_radians())
+                    * Quat::from_rotation_x(180f32.to_radians()),
+                ..default()
+            },
             ..default()
         },
-        transform: Transform {
-            translation: Vec3::ZERO,
-            rotation: Quat::from_rotation_y(90f32.to_radians())
-                * Quat::from_rotation_x(180f32.to_radians()),
-            ..default()
-        },
-        ..default()
-    });
+        SceneElement,
+    ));
 
     info!("Setting up game");
 }

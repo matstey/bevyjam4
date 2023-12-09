@@ -5,6 +5,8 @@ use rand::{distributions::uniform::SampleRange, Rng};
 
 use crate::{coord::CoordDistance, Coord};
 
+use super::GameElement;
+
 const PRESENT_COLORS: [Color; 5] = [
     Color::rgb(0.878, 0.106, 0.141),
     Color::rgb(0.20, 0.82, 0.478),
@@ -65,6 +67,7 @@ fn spawn_present(
             transform: coord.to_transform(),
             ..default()
         },
+        GameElement,
     ));
 }
 

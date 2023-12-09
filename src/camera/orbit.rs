@@ -3,7 +3,13 @@ use leafwing_input_manager::action_state::ActionState;
 
 use crate::{coord::CoordDistance, Coord};
 
-use super::CameraMovement;
+use crate::game::PlayerAction;
+
+// For some reason mouse zoom is very different on web
+#[cfg(target_arch = "wasm32")]
+const ZOOM_SCALER: f32 = 1.0;
+#[cfg(not(target_arch = "wasm32"))]
+const ZOOM_SCALER: f32 = 100.0;
 
 #[derive(Component, Default)]
 pub struct OrbitCamera {}
@@ -16,32 +22,23 @@ impl OrbitCamera {
 
 pub fn init(mut _commands: Commands) {}
 
-pub fn update_movement(
-    _time: Res<Time>,
-    mut camera_query: Query<(&mut Transform, &Coord), With<OrbitCamera>>,
-) {
-    for (mut _camera_transform, _coord) in camera_query.iter_mut() {
-        //coord.apply(&mut camera_transform);
-    }
-}
-
 pub fn update_input(
     time: Res<Time>,
-    mut camera_query: Query<(&mut Coord, &ActionState<CameraMovement>)>,
+    mut camera_query: Query<(&mut Coord, &ActionState<PlayerAction>)>,
 ) {
     for (mut coord, action) in camera_query.iter_mut() {
-        if action.pressed(CameraMovement::Zoom) {
-            let zoom_delta = action.value(CameraMovement::Zoom) * time.delta_seconds() * 100.0;
+        if action.pressed(PlayerAction::Zoom) {
+            let zoom_delta = action.value(PlayerAction::Zoom) * time.delta_seconds() * ZOOM_SCALER;
             coord.dist =
                 CoordDistance::Orbit((coord.get_distance() - zoom_delta).clamp(30.0, 100.0));
         }
 
-        let move_delta = match action.axis_pair(CameraMovement::Move) {
+        let move_delta = match action.axis_pair(PlayerAction::Move) {
             Some(axis) => axis.xy() * time.delta_seconds() * 0.1,
             None => Vec2::ZERO,
         };
 
-        if action.pressed(CameraMovement::CanMove) {
+        if action.pressed(PlayerAction::CanMove) {
             coord.long -= move_delta.x;
             coord.lat += move_delta.y;
         }

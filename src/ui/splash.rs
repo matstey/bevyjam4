@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::AppState;
-use crate::ui::despawn_screen;
+use crate::despawn;
 
 // This plugin will display a splash screen with a logo for 1 second before switching to the menu
 pub struct SplashPlugin;
@@ -10,7 +10,7 @@ impl Plugin for SplashPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::Splash), splash_setup)
             .add_systems(Update, countdown.run_if(in_state(AppState::Splash)))
-            .add_systems(OnExit(AppState::Splash), despawn_screen::<OnSplashScreen>);
+            .add_systems(OnExit(AppState::Splash), despawn::<OnSplashScreen>);
     }
 }
 

@@ -2,7 +2,9 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier3d::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
-use crate::{asset::LoadingAssets, camera::CameraMovement, Coord};
+use crate::{asset::LoadingAssets, game::PlayerAction, Coord};
+
+use super::GameElement;
 
 #[derive(Clone, Default)]
 pub struct Info {
@@ -120,7 +122,7 @@ fn spawn_station(commands: &mut Commands, station: Info, scene_res: &Res<Station
             .with_scale(Vec3::new(0.2, 0.2, 0.2)),
         ..default()
     };
-    let pad_entity = commands.spawn(pad_scene).id();
+    let pad_entity = commands.spawn((pad_scene, GameElement)).id();
 
     let rocket_scene = SceneBundle {
         scene: scene_res.rocket.clone_weak(),
@@ -128,7 +130,7 @@ fn spawn_station(commands: &mut Commands, station: Info, scene_res: &Res<Station
             .with_scale(Vec3::new(0.2, 0.2, 0.2)),
         ..default()
     };
-    let rocket_entity = commands.spawn(rocket_scene).id();
+    let rocket_entity = commands.spawn((rocket_scene, GameElement)).id();
 
     let coord = Coord::from_degrees(station.coord);
     commands
@@ -141,6 +143,7 @@ fn spawn_station(commands: &mut Commands, station: Info, scene_res: &Res<Station
             GlobalTransform::IDENTITY,
             RigidBody::Fixed,
             Collider::cuboid(0.5, 0.5, 0.5),
+            GameElement,
         ))
         .push_children(&[rocket_entity, pad_entity]);
 }
@@ -150,7 +153,7 @@ pub fn cast_ray(
     windows: Query<&Window, With<PrimaryWindow>>,
     rapier_context: Res<RapierContext>,
     cameras: Query<(&Camera, &GlobalTransform)>,
-    action_query: Query<&ActionState<CameraMovement>>,
+    action_query: Query<&ActionState<PlayerAction>>,
     station_query: Query<(Entity, &GroundStation, Option<&SelectedGroundStation>)>,
 ) {
     let window = windows.single();
@@ -159,9 +162,8 @@ pub fn cast_ray(
         return;
     };
 
-    // We will color in read the colliders hovered by the mouse.
     for (camera, camera_transform) in &cameras {
-        // First, compute a ray from the mouse position.
+        // Compute a ray from the mouse position.
         let Some(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
             return;
         };
@@ -176,7 +178,7 @@ pub fn cast_ray(
         );
 
         if let Some((entity, _toi)) = hit {
-            if action_query.single().just_released(CameraMovement::CanMove) {
+            if action_query.single().just_released(PlayerAction::CanMove) {
                 let is_selected = match station_query.get(entity) {
                     Ok((_, _, selected)) => selected.is_some(),
                     Err(_) => false,
