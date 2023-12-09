@@ -19,6 +19,7 @@ pub use coord::Coord;
 use game::{Player, PlayerAction};
 use input::InputPlugin;
 use leafwing_input_manager::action_state::ActionState;
+use state::GameState;
 pub mod asset;
 pub mod game;
 pub mod input;
@@ -48,6 +49,7 @@ impl Plugin for ApplicationPlugin {
                 ..default()
             }),))
             .add_state::<AppState>()
+            .add_state::<GameState>()
             .add_plugins((ScenePlugin, GamePlugin, CameraPlugin, InputPlugin))
             .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
             .add_plugins(bevy_framepace::FramepacePlugin)
@@ -55,7 +57,8 @@ impl Plugin for ApplicationPlugin {
             .add_plugins((
                 ui::UiPlugin,
                 ui::splash::SplashPlugin,
-                ui::menu::MenuPlugin,
+                ui::start::StartMenuPlugin,
+                ui::paused::PausedMenuPlugin,
                 ui::loading::LoadingPlugin,
                 ui::diagnostics::DiagnosticsPlugin,
             ))
@@ -91,12 +94,16 @@ pub fn setup_camera(mut commands: Commands) {
 }
 
 pub fn handle_pause(
-    mut game_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    game_state: Res<State<GameState>>,
     query: Query<&ActionState<PlayerAction>>,
 ) {
     for action in query.iter() {
         if action.just_pressed(PlayerAction::Pause) {
-            game_state.set(AppState::StartMenu);
+            match game_state.get() {
+                GameState::Running => next_game_state.set(GameState::Paused),
+                GameState::Paused => next_game_state.set(GameState::Running),
+            }
         }
     }
 }

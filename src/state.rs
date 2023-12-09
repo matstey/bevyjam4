@@ -11,20 +11,14 @@ pub enum AppState {
     #[default]
     Splash,
     StartMenu,
-    GameLoading,
-    GameRunning,
-    GamePaused,
-    GameOver,
+    Loading,
+    InGame,
+    PostGame,
 }
 
-impl AppState {
-    pub const ANY_GAME_STATE: [AppState; 4] = [
-        AppState::GameLoading,
-        AppState::GameRunning,
-        AppState::GamePaused,
-        AppState::GameOver,
-    ];
-    pub fn is_any_game_state(&self) -> bool {
-        AppState::ANY_GAME_STATE.contains(self)
-    }
+#[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default)]
+pub enum GameState {
+    #[default]
+    Running,
+    Paused,
 }

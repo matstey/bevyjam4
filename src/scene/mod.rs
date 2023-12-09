@@ -6,10 +6,10 @@ pub struct ScenePlugin;
 
 impl Plugin for ScenePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(OnEnter(AppState::GameLoading), load_resources)
-            .add_systems(OnExit(AppState::GameLoading), setup)
+        app.add_systems(OnEnter(AppState::Loading), load_resources)
+            .add_systems(OnExit(AppState::Loading), setup)
             .add_systems(Update, update_coords)
-            .add_systems(OnExit(AppState::GameRunning), despawn::<SceneElement>);
+            .add_systems(OnExit(AppState::InGame), despawn::<SceneElement>);
     }
 }
 

@@ -7,53 +7,28 @@ use crate::state::{AppState, ForState};
 use super::assets::UiAssets;
 
 // This plugin manages the start menu
-pub struct MenuPlugin;
+pub struct StartMenuPlugin;
 
-impl Plugin for MenuPlugin {
+impl Plugin for StartMenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<MenuState>()
+        app.add_state::<StartMenuState>()
             .add_systems(OnEnter(AppState::StartMenu), menu_setup)
-            .add_systems(OnEnter(MenuState::Main), main_menu_setup)
-            .add_systems(OnExit(MenuState::Main), despawn::<OnMainMenuScreen>)
-            .add_systems(
-                Update,
-                (menu_action, button_system).run_if(in_state(AppState::StartMenu)),
-            );
+            .add_systems(OnEnter(StartMenuState::Main), main_menu_setup)
+            .add_systems(OnExit(StartMenuState::Main), despawn::<StartMenuScreen>)
+            .add_systems(Update, menu_action.run_if(in_state(AppState::StartMenu)));
     }
 }
 
 // State used for the current menu screen
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-enum MenuState {
+enum StartMenuState {
     Main,
     #[default]
     Disabled,
 }
 
-// Tag component used to tag entities added on the main menu screen
 #[derive(Component)]
-struct OnMainMenuScreen;
-
-// Tag component used to tag entities added on the settings menu screen
-#[derive(Component)]
-struct OnSettingsMenuScreen;
-
-// Tag component used to tag entities added on the display settings menu screen
-#[derive(Component)]
-struct OnDisplaySettingsMenuScreen;
-
-// Tag component used to tag entities added on the sound settings menu screen
-#[derive(Component)]
-struct OnSoundSettingsMenuScreen;
-
-const NORMAL_BUTTON: Color = Color::rgba(0.15, 0.15, 0.15, 0.0);
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
-
-// Tag component used to mark which setting is currently selected
-#[derive(Component)]
-struct SelectedOption;
+struct StartMenuScreen;
 
 // All actions that can be triggered from a button click
 #[derive(Component)]
@@ -62,26 +37,8 @@ enum MenuButtonAction {
     Quit,
 }
 
-// This system handles changing all buttons color based on mouse interaction
-#[allow(clippy::type_complexity)]
-fn button_system(
-    mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, Option<&SelectedOption>),
-        (Changed<Interaction>, With<Button>),
-    >,
-) {
-    for (interaction, mut color, selected) in &mut interaction_query {
-        *color = match (*interaction, selected) {
-            (Interaction::Pressed, _) | (Interaction::None, Some(_)) => PRESSED_BUTTON.into(),
-            (Interaction::Hovered, Some(_)) => HOVERED_PRESSED_BUTTON.into(),
-            (Interaction::Hovered, None) => HOVERED_BUTTON.into(),
-            (Interaction::None, None) => NORMAL_BUTTON.into(),
-        }
-    }
-}
-
-fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>) {
-    menu_state.set(MenuState::Main);
+fn menu_setup(mut menu_state: ResMut<NextState<StartMenuState>>) {
+    menu_state.set(StartMenuState::Main);
 }
 
 fn main_menu_setup(mut commands: Commands, assets: Res<UiAssets>) {
@@ -101,7 +58,7 @@ fn main_menu_setup(mut commands: Commands, assets: Res<UiAssets>) {
             ForState {
                 states: vec![AppState::StartMenu],
             },
-            OnMainMenuScreen,
+            StartMenuScreen,
         ))
         .with_children(|parent| {
             parent.spawn((TextBundle {
@@ -174,8 +131,8 @@ fn menu_action(
         (Changed<Interaction>, With<Button>),
     >,
     mut app_exit_events: EventWriter<AppExit>,
-    mut menu_state: ResMut<NextState<MenuState>>,
-    mut game_state: ResMut<NextState<AppState>>,
+    mut menu_state: ResMut<NextState<StartMenuState>>,
+    mut app_state: ResMut<NextState<AppState>>,
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -183,8 +140,8 @@ fn menu_action(
                 MenuButtonAction::Quit => app_exit_events.send(AppExit),
                 MenuButtonAction::Play => {
                     commands.insert_resource(LoadingAssets::default()); // TODO: Just a little hack for testing
-                    game_state.set(AppState::GameLoading);
-                    menu_state.set(MenuState::Disabled);
+                    app_state.set(AppState::Loading);
+                    menu_state.set(StartMenuState::Disabled);
                 }
             }
         }

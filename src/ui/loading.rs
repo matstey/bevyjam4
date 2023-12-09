@@ -10,8 +10,8 @@ pub struct LoadingPlugin;
 
 impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::GameLoading), setup)
-            .add_systems(OnExit(AppState::GameLoading), despawn::<OnLoadingScreen>);
+        app.add_systems(OnEnter(AppState::Loading), setup)
+            .add_systems(OnExit(AppState::Loading), despawn::<OnLoadingScreen>);
     }
 }
 
@@ -33,7 +33,7 @@ fn setup(mut commands: Commands, assets: Res<UiAssets>) {
                 ..default()
             },
             ForState {
-                states: vec![AppState::GameLoading],
+                states: vec![AppState::Loading],
             },
             OnLoadingScreen,
         ))

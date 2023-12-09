@@ -27,24 +27,21 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(
-            OnEnter(AppState::GameLoading),
-            ground_station::load_resources,
-        )
-        .add_systems(
-            OnEnter(AppState::GameRunning),
-            (player::spawn, present::spawn, ground_station::spawn)
-                .run_if(in_state(AppState::GameRunning)),
-        )
-        .add_systems(
-            Update,
-            ground_station::cast_ray.run_if(in_state(AppState::GameRunning)),
-        )
-        .add_systems(
-            Update,
-            check_assets_loaded.run_if(in_state(AppState::GameLoading)),
-        )
-        .add_systems(OnExit(AppState::GameRunning), despawn::<GameElement>);
+        app.add_systems(OnEnter(AppState::Loading), ground_station::load_resources)
+            .add_systems(
+                OnEnter(AppState::InGame),
+                (player::spawn, present::spawn, ground_station::spawn)
+                    .run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(
+                Update,
+                ground_station::cast_ray.run_if(in_state(AppState::InGame)),
+            )
+            .add_systems(
+                Update,
+                check_assets_loaded.run_if(in_state(AppState::Loading)),
+            )
+            .add_systems(OnExit(AppState::InGame), despawn::<GameElement>);
     }
 }
 
@@ -62,7 +59,7 @@ fn check_assets_loaded(
     }
 
     if loaded == loading.0.len() {
-        game_state.set(AppState::GameRunning);
+        game_state.set(AppState::InGame);
         commands.remove_resource::<LoadingAssets>();
         info!("All {} assets loaded", loaded);
     }

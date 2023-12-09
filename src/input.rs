@@ -8,15 +8,15 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_plugins(InputManagerPlugin::<PlayerAction>::default())
-            .add_systems(
-                OnEnter(AppState::GameRunning),
-                add_player_input.run_if(in_state(AppState::GameRunning)),
-            )
-            .add_systems(OnExit(AppState::GameRunning), remove_player_input);
+            .add_systems(OnEnter(AppState::InGame), add_player_input)
+            .add_systems(OnExit(AppState::InGame), remove_player_input);
     }
 }
 
-pub fn add_player_input(mut commands: Commands, query: Query<Entity, With<Player>>) {
+pub fn add_player_input(
+    mut commands: Commands,
+    query: Query<Entity, (With<Player>, Without<ActionState<PlayerAction>>)>,
+) {
     for player in query.iter() {
         info!("Adding input to player {:#?}", player);
 
@@ -29,7 +29,10 @@ pub fn add_player_input(mut commands: Commands, query: Query<Entity, With<Player
     }
 }
 
-pub fn remove_player_input(mut commands: Commands, query: Query<Entity, With<Player>>) {
+pub fn remove_player_input(
+    mut commands: Commands,
+    query: Query<Entity, (With<Player>, With<ActionState<PlayerAction>>)>,
+) {
     for player in query.iter() {
         info!("Removing input from player {:#?}", player);
 

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
+use crate::state::GameState;
 use crate::{coord::CoordDistance, Coord};
 
 use crate::game::PlayerAction;
@@ -25,7 +26,13 @@ pub fn init(mut _commands: Commands) {}
 pub fn update_input(
     time: Res<Time>,
     mut camera_query: Query<(&mut Coord, &ActionState<PlayerAction>)>,
+    game_state: Res<State<GameState>>,
 ) {
+    // If game is paused dont update
+    if *game_state.get() == GameState::Paused {
+        return;
+    }
+
     for (mut coord, action) in camera_query.iter_mut() {
         if action.pressed(PlayerAction::Zoom) {
             let zoom_delta = action.value(PlayerAction::Zoom) * time.delta_seconds() * ZOOM_SCALER;
