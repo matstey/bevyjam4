@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::AppState;
+use super::{assets::UiAssets, AppState};
 use crate::despawn;
 
 // This plugin will display a splash screen with a logo for 1 second before switching to the menu
@@ -20,9 +20,7 @@ struct OnSplashScreen;
 #[derive(Resource, Deref, DerefMut)]
 struct SplashTimer(Timer);
 
-fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let icon = asset_server.load("splash.jpg");
-    // Display the logo
+fn splash_setup(mut commands: Commands, assets: Res<UiAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -41,10 +39,12 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             parent.spawn(ImageBundle {
                 style: Style {
                     // This will set the logo to be 200px wide, and auto adjust its height
-                    width: Val::Px(200.0),
+                    //width: Val::Px(200.0),
+                    position_type: PositionType::Absolute,
+                    width: Val::Percent(100.0),
                     ..default()
                 },
-                image: UiImage::new(icon),
+                image: assets.background.clone(),
                 ..default()
             });
         });

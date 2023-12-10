@@ -38,6 +38,17 @@ fn setup(mut commands: Commands, assets: Res<UiAssets>) {
             OnLoadingScreen,
         ))
         .with_children(|parent| {
+            parent.spawn(ImageBundle {
+                style: Style {
+                    // This will set the logo to be 200px wide, and auto adjust its height
+                    //width: Val::Px(200.0),
+                    position_type: PositionType::Absolute,
+                    width: Val::Percent(100.0),
+                    ..default()
+                },
+                image: assets.background.clone(),
+                ..default()
+            });
             parent.spawn((TextBundle {
                 style: Style { ..default() },
                 text: Text::from_section(

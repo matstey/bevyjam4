@@ -45,6 +45,8 @@ pub fn update_target(
                 .rotation
                 .slerp(t.rotation, time.delta_seconds() * 5.0);
 
+            // TODO: Make rockets not go though the earth
+
             // Once we are close to the present despawn it
             let distance = present_trans.translation.distance(rocket_trans.translation);
             if distance < 0.1 {

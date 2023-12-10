@@ -62,18 +62,17 @@ fn main_menu_setup(mut commands: Commands, assets: Res<UiAssets>) {
             StartMenuScreen,
         ))
         .with_children(|parent| {
-            parent.spawn((TextBundle {
-                style: Style { ..default() },
-                text: Text::from_section(
-                    "Santa F**cked Up",
-                    TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 100.0,
-                        color: Color::rgb_u8(0xe0, 0x1b, 0x24),
-                    },
-                ),
+            parent.spawn(ImageBundle {
+                style: Style {
+                    // This will set the logo to be 200px wide, and auto adjust its height
+                    //width: Val::Px(200.0),
+                    position_type: PositionType::Absolute,
+                    width: Val::Percent(100.0),
+                    ..default()
+                },
+                image: assets.background.clone(),
                 ..default()
-            },));
+            });
             parent
                 .spawn((
                     ButtonBundle {

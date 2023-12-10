@@ -49,7 +49,7 @@ impl Plugin for ApplicationPlugin {
             .add_plugins((DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Santa F**ked Up".into(),
-                    resolution: (1280., 800.).into(),
+                    resolution: (1200., 800.).into(),
                     present_mode: PresentMode::AutoVsync,
                     fit_canvas_to_parent: true, // Tells wasm to resize the window according to the available canvas
                     ..default()
@@ -71,7 +71,7 @@ impl Plugin for ApplicationPlugin {
                 ui::loading::LoadingPlugin,
                 ui::game::GamePlugin,
                 ui::post::PostGamePlugin,
-                ui::diagnostics::DiagnosticsPlugin,
+                //ui::diagnostics::DiagnosticsPlugin,
             ))
             .insert_resource(LoadingAssets::default())
             .add_systems(Update, (handle_pause, cubemap_loaded));

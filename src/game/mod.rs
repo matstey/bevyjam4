@@ -80,8 +80,8 @@ impl Plugin for GamePlugin {
                 unpause.run_if(in_state(AppState::InGame)),
             )
             .insert_resource(LevelConfig {
-                low_orbit_presents: 120,
-                high_orbit_presents: 20,
+                low_orbit_presents: 140,
+                high_orbit_presents: 30,
                 time: 160,
                 present_size: 0.4,
                 present_hitbox_size: 0.5,
