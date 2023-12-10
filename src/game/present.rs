@@ -127,6 +127,7 @@ fn gen_index(max: usize) -> usize {
     r.gen_range(0..max)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn cast_ray(
     mut commands: Commands,
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -164,14 +165,13 @@ pub fn cast_ray(
         if let Some((entity, _toi)) = hit {
             if *interaction_state == InteractionState::OnEntity
                 && action_query.single().just_released(PlayerAction::CanMove)
+                && present_query.contains(entity)
             {
-                if present_query.contains(entity) {
-                    commands.entity(entity).insert(CollectPresent::default());
+                commands.entity(entity).insert(CollectPresent::default());
 
-                    commands
-                        .entity(entity)
-                        .insert(selected_material.mat.clone());
-                }
+                commands
+                    .entity(entity)
+                    .insert(selected_material.mat.clone());
             }
             on_entity = true;
         }

@@ -51,6 +51,7 @@ pub fn update_input(
             None => Vec2::ZERO,
         };
 
+        #[allow(clippy::bool_comparison)]
         if action.pressed(PlayerAction::CanMove)
             && action.just_pressed(PlayerAction::CanMove) == false
         // Ignore if we just pressed to allow us time to stop false moved when on an entity
