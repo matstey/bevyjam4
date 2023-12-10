@@ -23,6 +23,21 @@ pub struct Present {}
 #[derive(Component, Default)]
 pub struct CollectPresent {}
 
+#[derive(Resource)]
+pub struct SelectedMaterial {
+    pub mat: Handle<StandardMaterial>,
+}
+
+pub fn init(mut commands: Commands, mut materials: ResMut<Assets<StandardMaterial>>) {
+    commands.insert_resource(SelectedMaterial {
+        mat: materials.add(StandardMaterial {
+            base_color: Color::rgba_u8(255, 255, 255, 255),
+            unlit: true,
+            ..default()
+        }),
+    });
+}
+
 pub fn spawn(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -121,6 +136,7 @@ pub fn cast_ray(
     present_query: Query<(Entity, &Present)>,
     mut next_interaction_state: ResMut<NextState<InteractionState>>,
     interaction_state: Res<State<InteractionState>>,
+    selected_material: Res<SelectedMaterial>,
 ) {
     let window = windows.single();
 
@@ -151,6 +167,10 @@ pub fn cast_ray(
             {
                 if present_query.contains(entity) {
                     commands.entity(entity).insert(CollectPresent::default());
+
+                    commands
+                        .entity(entity)
+                        .insert(selected_material.mat.clone());
                 }
             }
             on_entity = true;

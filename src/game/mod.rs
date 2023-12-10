@@ -49,7 +49,8 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_systems(OnEnter(AppState::Loading), ground_station::load_resources)
+        app.add_systems(Startup, present::init)
+            .add_systems(OnEnter(AppState::Loading), ground_station::load_resources)
             .add_systems(
                 OnEnter(AppState::InGame),
                 (init, player::spawn, present::spawn, ground_station::spawn)
@@ -79,11 +80,11 @@ impl Plugin for GamePlugin {
                 unpause.run_if(in_state(AppState::InGame)),
             )
             .insert_resource(LevelConfig {
-                low_orbit_presents: 1,
-                high_orbit_presents: 1,
+                low_orbit_presents: 120,
+                high_orbit_presents: 20,
                 time: 160,
-                present_size: 0.3,
-                present_hitbox_size: 0.4,
+                present_size: 0.4,
+                present_hitbox_size: 0.5,
             })
             .insert_resource(GameData::default());
     }

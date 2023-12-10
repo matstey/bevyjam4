@@ -31,12 +31,7 @@ pub fn load_resources(
     commands.insert_resource(SceneResources { earth });
 }
 
-fn setup(
-    mut commands: Commands,
-    mut _meshes: ResMut<Assets<Mesh>>,
-    mut _materials: ResMut<Assets<StandardMaterial>>,
-    scene_res: Res<SceneResources>,
-) {
+fn setup(mut commands: Commands, scene_res: Res<SceneResources>) {
     let scene = SceneBundle {
         scene: scene_res.earth.clone_weak(),
         ..default()

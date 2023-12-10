@@ -111,6 +111,29 @@ pub fn spawn(mut commands: Commands, scene_res: Res<StationResources>) {
 }
 
 fn spawn_station(commands: &mut Commands, station: Info, scene_res: &Res<StationResources>) {
+    let coord = Coord::from_degrees(station.coord);
+
+    let rocket_scene = SceneBundle {
+        scene: scene_res.rocket.clone_weak(),
+        transform: Transform::from_scale(Vec3::new(0.2, 0.2, 0.2)),
+        ..default()
+    };
+    let rocket_entity = commands.spawn(rocket_scene).id();
+    commands
+        .spawn((
+            Rocket::default(),
+            TransformBundle {
+                local: coord.to_transform()
+                    * Transform::from_rotation(Quat::from_rotation_x(180f32.to_radians()))
+                    * Transform::from_translation(Vec3::new(0.0, 0.0, -0.5)),
+                global: GlobalTransform::IDENTITY,
+            },
+            Visibility::Visible,
+            InheritedVisibility::VISIBLE,
+            GameElement,
+        ))
+        .push_children(&[rocket_entity]);
+
     let pad_scene = SceneBundle {
         scene: scene_res.pad.clone_weak(),
         transform: Transform::from_rotation(Quat::from_rotation_x(90f32.to_radians()))
@@ -119,26 +142,17 @@ fn spawn_station(commands: &mut Commands, station: Info, scene_res: &Res<Station
     };
     let pad_entity = commands.spawn((pad_scene, GameElement)).id();
 
-    let rocket_scene = SceneBundle {
-        scene: scene_res.rocket.clone_weak(),
-        transform: Transform::from_rotation(Quat::from_rotation_x(90f32.to_radians()))
-            .with_scale(Vec3::new(0.2, 0.2, 0.2)),
-        ..default()
-    };
-    let rocket_entity = commands
-        .spawn((rocket_scene, GameElement, Rocket::default()))
-        .id();
-
-    let coord = Coord::from_degrees(station.coord);
     commands
         .spawn((
             GroundStation::default(),
             coord,
-            coord.to_transform(),
+            TransformBundle {
+                local: coord.to_transform(),
+                global: GlobalTransform::IDENTITY,
+            },
             Visibility::Visible,
             InheritedVisibility::VISIBLE,
-            GlobalTransform::IDENTITY,
             GameElement,
         ))
-        .push_children(&[rocket_entity, pad_entity]);
+        .push_children(&[pad_entity]);
 }
