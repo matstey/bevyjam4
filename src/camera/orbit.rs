@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use leafwing_input_manager::action_state::ActionState;
 
-use crate::state::GameState;
+use crate::state::{GameState, InteractionState};
 use crate::{coord::CoordDistance, Coord};
 
 use crate::game::PlayerAction;
@@ -27,9 +27,15 @@ pub fn update_input(
     time: Res<Time>,
     mut camera_query: Query<(&mut Coord, &ActionState<PlayerAction>)>,
     game_state: Res<State<GameState>>,
+    interaction_state: Res<State<InteractionState>>,
 ) {
     // If game is paused dont update
     if *game_state.get() == GameState::Paused {
+        return;
+    }
+
+    // Dont move if we clicked an entity
+    if *interaction_state == InteractionState::OnEntity {
         return;
     }
 
@@ -45,7 +51,10 @@ pub fn update_input(
             None => Vec2::ZERO,
         };
 
-        if action.pressed(PlayerAction::CanMove) {
+        if action.pressed(PlayerAction::CanMove)
+            && action.just_pressed(PlayerAction::CanMove) == false
+        // Ignore if we just pressed to allow us time to stop false moved when on an entity
+        {
             coord.long -= move_delta.x;
             coord.lat += move_delta.y;
         }

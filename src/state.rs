@@ -22,3 +22,10 @@ pub enum GameState {
     Running,
     Paused,
 }
+
+#[derive(States, Debug, Copy, Clone, Hash, Eq, PartialEq, Default)]
+pub enum InteractionState {
+    #[default]
+    Idle,
+    OnEntity,
+}

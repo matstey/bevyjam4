@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::despawn;
+use crate::game::GameData;
 use crate::state::{AppState, ForState, GameState};
 
 use super::assets::UiAssets;
@@ -25,7 +26,13 @@ enum MenuButtonAction {
     Continue,
 }
 
-fn setup(mut commands: Commands, assets: Res<UiAssets>) {
+fn setup(mut commands: Commands, assets: Res<UiAssets>, game_data: Res<GameData>) {
+    let title = if game_data.won {
+        "You Won!"
+    } else {
+        "Game Over"
+    };
+
     commands
         .spawn((
             NodeBundle {
@@ -48,7 +55,7 @@ fn setup(mut commands: Commands, assets: Res<UiAssets>) {
             parent.spawn((TextBundle {
                 style: Style { ..default() },
                 text: Text::from_section(
-                    "Game Over",
+                    title,
                     TextStyle {
                         font: assets.font.clone(),
                         font_size: 80.0,

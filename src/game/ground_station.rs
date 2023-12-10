@@ -1,10 +1,8 @@
-use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_rapier3d::prelude::*;
-use leafwing_input_manager::action_state::ActionState;
+use bevy::prelude::*;
 
-use crate::{asset::LoadingAssets, game::PlayerAction, Coord};
+use crate::{asset::LoadingAssets, Coord};
 
-use super::GameElement;
+use super::{rocket::Rocket, GameElement};
 
 #[derive(Clone, Default)]
 pub struct Info {
@@ -88,9 +86,6 @@ const STATIONS: [Info; 10] = [
 #[derive(Component, Default)]
 pub struct GroundStation {}
 
-#[derive(Component, Default)]
-pub struct SelectedGroundStation {}
-
 #[derive(Resource)]
 pub struct StationResources {
     pub pad: Handle<Scene>,
@@ -130,7 +125,9 @@ fn spawn_station(commands: &mut Commands, station: Info, scene_res: &Res<Station
             .with_scale(Vec3::new(0.2, 0.2, 0.2)),
         ..default()
     };
-    let rocket_entity = commands.spawn((rocket_scene, GameElement)).id();
+    let rocket_entity = commands
+        .spawn((rocket_scene, GameElement, Rocket::default()))
+        .id();
 
     let coord = Coord::from_degrees(station.coord);
     commands
@@ -141,74 +138,7 @@ fn spawn_station(commands: &mut Commands, station: Info, scene_res: &Res<Station
             Visibility::Visible,
             InheritedVisibility::VISIBLE,
             GlobalTransform::IDENTITY,
-            RigidBody::Fixed,
-            Collider::cuboid(0.5, 0.5, 0.5),
             GameElement,
         ))
         .push_children(&[rocket_entity, pad_entity]);
-}
-
-pub fn cast_ray(
-    mut commands: Commands,
-    windows: Query<&Window, With<PrimaryWindow>>,
-    rapier_context: Res<RapierContext>,
-    cameras: Query<(&Camera, &GlobalTransform)>,
-    action_query: Query<&ActionState<PlayerAction>>,
-    station_query: Query<(Entity, &GroundStation, Option<&SelectedGroundStation>)>,
-) {
-    let window = windows.single();
-
-    let Some(cursor_position) = window.cursor_position() else {
-        return;
-    };
-
-    for (camera, camera_transform) in &cameras {
-        // Compute a ray from the mouse position.
-        let Some(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
-            return;
-        };
-
-        // Then cast the ray.
-        let hit = rapier_context.cast_ray(
-            ray.origin,
-            ray.direction,
-            f32::MAX,
-            true,
-            QueryFilter::only_fixed(),
-        );
-
-        if let Some((entity, _toi)) = hit {
-            if action_query.single().just_released(PlayerAction::CanMove) {
-                let is_selected = match station_query.get(entity) {
-                    Ok((_, _, selected)) => selected.is_some(),
-                    Err(_) => false,
-                };
-
-                if is_selected {
-                    commands.entity(entity).remove::<SelectedGroundStation>();
-                    commands.entity(entity).remove::<ColliderDebugColor>();
-                } else {
-                    // Clear all selected
-                    for (selected_entity, _, selected) in station_query.iter() {
-                        if selected.is_some() {
-                            commands
-                                .entity(selected_entity)
-                                .remove::<SelectedGroundStation>();
-                            commands
-                                .entity(selected_entity)
-                                .remove::<ColliderDebugColor>();
-                        }
-                    }
-
-                    commands
-                        .entity(entity)
-                        .insert(SelectedGroundStation::default());
-
-                    commands
-                        .entity(entity)
-                        .insert(ColliderDebugColor(Color::BLUE));
-                }
-            }
-        }
-    }
 }

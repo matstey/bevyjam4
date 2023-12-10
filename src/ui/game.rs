@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::despawn;
-use crate::game::GameTimer;
+use crate::game::{GameData, GameTimer, LevelConfig};
 use crate::state::{AppState, ForState};
 
 use super::assets::UiAssets;
@@ -13,7 +13,13 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(AppState::InGame), setup)
             .add_systems(OnExit(AppState::InGame), despawn::<GameScreen>)
-            .add_systems(Update, update.run_if(in_state(AppState::InGame)));
+            .add_systems(
+                Update,
+                (
+                    update_countdown.run_if(in_state(AppState::InGame)),
+                    update_present_count.run_if(in_state(AppState::InGame)),
+                ),
+            );
     }
 }
 
@@ -22,6 +28,9 @@ struct GameScreen;
 
 #[derive(Component)]
 struct CountdownText;
+
+#[derive(Component)]
+struct PresentsText;
 
 fn setup(mut commands: Commands, assets: Res<UiAssets>) {
     commands
@@ -64,20 +73,54 @@ fn setup(mut commands: Commands, assets: Res<UiAssets>) {
                 },
                 CountdownText,
             ));
+            parent.spawn((
+                TextBundle {
+                    style: Style {
+                        top: Val::Px(10.0),
+                        right: Val::Px(10.0),
+                        align_self: AlignSelf::End,
+                        position_type: PositionType::Absolute,
+                        ..default()
+                    },
+                    text: Text::from_section(
+                        "\n0/0", // TODO: HACK: Need to work out how to do proper UI layout
+                        TextStyle {
+                            font: assets.font.clone(),
+                            font_size: 40.0,
+                            color: Color::rgb_u8(0xe0, 0x1b, 0x24),
+                        },
+                    ),
+                    ..default()
+                },
+                PresentsText,
+            ));
         });
 }
 
-fn update(timer: Res<GameTimer>, mut query: Query<&mut Text, With<CountdownText>>) {
+fn update_countdown(timer: Res<GameTimer>, mut query: Query<&mut Text, With<CountdownText>>) {
     for mut text in query.iter_mut() {
-        match text.sections.first_mut() {
-            Some(text) => {
-                text.value = format!(
-                    "{:00}:{:00}",
-                    timer.remaining().as_secs(),
-                    timer.remaining().subsec_millis()
-                )
-            }
-            None => {}
+        if let Some(text) = text.sections.first_mut() {
+            // Convert secs to the min and sec components
+            let total_secs = timer.remaining_secs();
+            let mins = (total_secs / 60.0).floor() as i32;
+            let secs = (total_secs - (mins * 60) as f32) as i32;
+            text.value = format!("{:02}:{:02}", mins, secs)
+        }
+    }
+}
+
+fn update_present_count(
+    mut query: Query<&mut Text, With<PresentsText>>,
+    level_config: Res<LevelConfig>,
+    game_data: Res<GameData>,
+) {
+    for mut text in query.iter_mut() {
+        if let Some(text) = text.sections.first_mut() {
+            text.value = format!(
+                "\n{}/{}",
+                game_data.presents_collected,
+                level_config.high_orbit_presents + level_config.low_orbit_presents
+            );
         }
     }
 }

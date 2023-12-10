@@ -21,7 +21,7 @@ pub use coord::Coord;
 use game::{Player, PlayerAction};
 use input::InputPlugin;
 use leafwing_input_manager::action_state::ActionState;
-use state::GameState;
+use state::{GameState, InteractionState};
 pub mod asset;
 pub mod game;
 pub mod input;
@@ -58,6 +58,7 @@ impl Plugin for ApplicationPlugin {
             }),))
             .add_state::<AppState>()
             .add_state::<GameState>()
+            .add_state::<InteractionState>()
             .add_plugins((ScenePlugin, GamePlugin, CameraPlugin, InputPlugin))
             .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
             .add_plugins(bevy_framepace::FramepacePlugin)
@@ -69,13 +70,14 @@ impl Plugin for ApplicationPlugin {
                 ui::paused::PausedMenuPlugin,
                 ui::loading::LoadingPlugin,
                 ui::game::GamePlugin,
-                ui::end::PostGamePlugin,
+                ui::post::PostGamePlugin,
                 ui::diagnostics::DiagnosticsPlugin,
             ))
             .insert_resource(LoadingAssets::default())
             .add_systems(Update, (handle_pause, cubemap_loaded));
 
-        #[cfg(debug_assertions)]
+        //#[cfg(debug_assertions)]
+        #[cfg(feature = "editor")]
         app.add_plugins(RapierDebugRenderPlugin::default());
 
         #[cfg(feature = "editor")]
@@ -87,7 +89,7 @@ pub fn setup_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
     let transform = Transform::from_translation(Vec3::new(0.0, 1.0, 5.0))
         * Transform::from_rotation(Quat::from_rotation_y(0.0_f32.to_radians()));
 
-    let skybox = asset_server.load("sky.jpg");
+    let skybox = asset_server.load("sky.png");
 
     commands.spawn((
         Camera3dBundle {

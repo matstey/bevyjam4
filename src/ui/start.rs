@@ -34,6 +34,7 @@ struct StartMenuScreen;
 #[derive(Component)]
 enum MenuButtonAction {
     Play,
+    #[cfg(not(target_arch = "wasm32"))]
     Quit,
 }
 
@@ -137,6 +138,7 @@ fn menu_action(
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match menu_button_action {
+                #[cfg(not(target_arch = "wasm32"))]
                 MenuButtonAction::Quit => app_exit_events.send(AppExit),
                 MenuButtonAction::Play => {
                     commands.insert_resource(LoadingAssets::default()); // TODO: Just a little hack for testing
